@@ -19,11 +19,14 @@ fn main() -> ! {
      */
 
     let mut _led = pins.d13.into_output();
+    let mut adc = arduino_hal::Adc::new(dp.ADC, Default::default());
+    let sensor_input = pins.a0.into_analog_input(&mut adc);
     
     let mut serial = arduino_hal::default_serial!(dp, pins, 57600);
 
     loop {
-        arduino_hal::delay_ms(1000);
-	_ = ufmt::uwriteln!(serial, "Hi\n");
+        arduino_hal::delay_ms(100);
+	let voltage = sensor_input.analog_read(&mut adc);
+	_ = ufmt::uwriteln!(serial, "{}", voltage);
     }
 }
