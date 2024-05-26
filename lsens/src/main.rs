@@ -27,6 +27,6 @@ fn main() -> ! {
     loop {
         arduino_hal::delay_ms(100);
 	let voltage = sensor_input.analog_read(&mut adc);
-	_ = ufmt::uwriteln!(serial, "{}", voltage);
+	_ = ufmt::uwriteln!(serial, "{}\n", voltage);
     }
 }
