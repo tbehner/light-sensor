@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+use embedded_hal::digital::v2::OutputPin;
 use panic_halt as _;
 
 #[arduino_hal::entry]
@@ -8,17 +9,7 @@ fn main() -> ! {
     let dp = arduino_hal::Peripherals::take().unwrap();
     let pins = arduino_hal::pins!(dp);
 
-    /*
-     * For examples (and inspiration), head to
-     *
-     *     https://github.com/Rahix/avr-hal/tree/main/examples
-     *
-     * NOTE: Not all examples were ported to all boards!  There is a good chance though, that code
-     * for a different board can be adapted for yours.  The Arduino Uno currently has the most
-     * examples available.
-     */
-
-    let mut _led = pins.d13.into_output();
+    let mut led = pins.d13.into_output();
     let mut adc = arduino_hal::Adc::new(dp.ADC, Default::default());
     let sensor_input = pins.a0.into_analog_input(&mut adc);
     
@@ -26,7 +17,14 @@ fn main() -> ! {
 
     loop {
         arduino_hal::delay_ms(1000);
-	let voltage = sensor_input.analog_read(&mut adc);
-	_ = ufmt::uwriteln!(serial, "{}", voltage);
+        let voltage = sensor_input.analog_read(&mut adc);
+
+        if voltage > 1000 && led.is_set_low(){
+            led.set_low();
+        } else if voltage < 800 && led.is_set_high() {
+            led.set_high();
+        }
+
+        let _ = ufmt::uwriteln!(serial, "{}", voltage);
     }
 }
