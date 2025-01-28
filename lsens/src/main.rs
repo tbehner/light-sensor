@@ -10,6 +10,7 @@ fn main() -> ! {
     let pins = arduino_hal::pins!(dp);
 
     let mut led = pins.d13.into_output();
+    led.set_low();
     let mut adc = arduino_hal::Adc::new(dp.ADC, Default::default());
     let sensor_input = pins.a0.into_analog_input(&mut adc);
     
@@ -19,10 +20,10 @@ fn main() -> ! {
         arduino_hal::delay_ms(1000);
         let voltage = sensor_input.analog_read(&mut adc);
 
-        if voltage > 1000 && led.is_set_low(){
-            led.set_low();
-        } else if voltage < 800 && led.is_set_high() {
+        if voltage < 400 && led.is_set_low(){
             led.set_high();
+        } else if voltage > 500 && led.is_set_high() {
+            led.set_low();
         }
 
         let _ = ufmt::uwriteln!(serial, "{}", voltage);
