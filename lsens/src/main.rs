@@ -1,7 +1,6 @@
 #![no_std]
 #![no_main]
 
-use embedded_hal::digital::{v2::OutputPin, v2::StatefulOutputPin};
 use panic_halt as _;
 use arduino_hal::port::Pin;
 use arduino_hal::port::mode::Output;
@@ -18,9 +17,9 @@ impl LedWithThreshold {
     }
 
     fn set(&mut self, value: u16) {
-        if value > 1000 && self.led.is_set_low(){
+        if value > self.upper_threshold && self.led.is_set_low(){
             let _ = self.led.set_low();
-        } else if value < 800 && self.led.is_set_high() {
+        } else if value < self.lower_threshold && self.led.is_set_high() {
             let _ = self.led.set_high();
         }
     }
@@ -32,7 +31,7 @@ fn main() -> ! {
     let dp = arduino_hal::Peripherals::take().unwrap();
     let pins = arduino_hal::pins!(dp);
 
-    let mut led = pins.d13.into_output().downgrade();
+    let led = pins.d13.into_output().downgrade();
     let mut adc = arduino_hal::Adc::new(dp.ADC, Default::default());
     let sensor_input = pins.a0.into_analog_input(&mut adc);
     
@@ -45,6 +44,6 @@ fn main() -> ! {
 
         led_thr.set(value);
 
-        let _ = ufmt::uwriteln!(serial, "{}", voltage);
+        let _ = ufmt::uwriteln!(serial, "{}", value);
     }
 }
