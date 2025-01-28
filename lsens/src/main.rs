@@ -12,15 +12,16 @@ struct LedWithThreshold {
 }
 
 impl LedWithThreshold {
-    fn new(led: Pin<Output>, lower_threshold: u16, upper_threshold: u16) -> LedWithThreshold {
+    fn new(mut led: Pin<Output>, lower_threshold: u16, upper_threshold: u16) -> LedWithThreshold {
+        led.set_low();
         LedWithThreshold {led, lower_threshold, upper_threshold}
     }
 
     fn set(&mut self, value: u16) {
-        if value > self.upper_threshold && self.led.is_set_low(){
-            let _ = self.led.set_low();
-        } else if value < self.lower_threshold && self.led.is_set_high() {
+        if value < self.lower_threshold && self.led.is_set_low(){
             let _ = self.led.set_high();
+        } else if value > self.upper_threshold && self.led.is_set_high() {
+            let _ = self.led.set_low();
         }
     }
 }
@@ -36,7 +37,7 @@ fn main() -> ! {
     let sensor_input = pins.a0.into_analog_input(&mut adc);
     
     let mut serial = arduino_hal::default_serial!(dp, pins, 57600);
-    let mut led_thr = LedWithThreshold::new(led, 800, 1000);
+    let mut led_thr = LedWithThreshold::new(led, 300, 500);
 
     loop {
         arduino_hal::delay_ms(1000);
